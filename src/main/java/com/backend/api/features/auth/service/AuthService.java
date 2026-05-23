@@ -62,8 +62,15 @@ public class AuthService {
             response.put("success", true);
             response.put("access_token", authResponse.get("access_token"));
             response.put("token_type", "bearer");
-            response.put("userId", user.getId());
-            response.put("email", user.getEmail());
+            
+            // ── CHANGED HERE: Wrap user information inside a structured "user" map ──
+            // This mirrors exactly what your client-side Login.jsx expects: data.user.role
+            Map<String, Object> userData = new LinkedHashMap<>();
+            userData.put("id", user.getId());
+            userData.put("email", user.getEmail());
+            userData.put("role", user.getRole()); // Sends "user" or "admin" from local DB
+            
+            response.put("user", userData);
             return response;
 
         } catch (Exception e) {
@@ -93,14 +100,14 @@ public class AuthService {
             User user = new User();
             user.setEmail(email);
             user.setPassword(password); 
+            // Note: user.setRole("user") is automatically handled by the field default value we added
             User savedUser = userRepository.save(user);
 
             // 2. Create and correctly populate the Profile
             Profile profile = new Profile();
             profile.setUser(savedUser);
-            profile.setEmail(email); // <-- FIX: Explicitly set the email
+            profile.setEmail(email);
             
-            // FIX: Create a default fallback name based on their email (e.g., "johndoe" from "johndoe@gmail.com")
             String defaultName = email.substring(0, email.indexOf("@"));
             profile.setUsername(defaultName);
             profile.setFullName(defaultName);
@@ -110,8 +117,14 @@ public class AuthService {
             Map<String, Object> response = new LinkedHashMap<>();
             response.put("success", true);
             response.put("message", "Registration successful");
-            response.put("userId", savedUser.getId());
-            response.put("email", savedUser.getEmail());
+            
+            // ── CHANGED HERE: Also bundle user and role profiles neatly on creation ──
+            Map<String, Object> userData = new LinkedHashMap<>();
+            userData.put("id", savedUser.getId());
+            userData.put("email", savedUser.getEmail());
+            userData.put("role", savedUser.getRole());
+            
+            response.put("user", userData);
             return response;
 
         } catch (Exception e) {

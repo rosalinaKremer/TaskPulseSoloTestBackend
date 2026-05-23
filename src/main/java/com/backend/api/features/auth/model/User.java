@@ -3,6 +3,8 @@ package com.backend.api.features.auth.model;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.backend.api.features.profile.model.Profile;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,9 +16,6 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-
-// We are allowed to import from Profile because Auth creates the initial Profile
-import com.backend.api.features.profile.model.Profile;
 
 @Entity
 @Table(name = "users")
@@ -47,6 +46,8 @@ public class User {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
     }
+    @Column(nullable = false)
+    private String role = "user";
 
     @PreUpdate
     protected void onUpdate() {
@@ -71,4 +72,7 @@ public class User {
 
     public Profile getProfile() { return profile; }
     public void setProfile(Profile profile) { this.profile = profile; }
+
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
 }
